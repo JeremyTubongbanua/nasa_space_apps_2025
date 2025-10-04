@@ -1,0 +1,20 @@
+{
+  "common_header": "location_id,location_name,parameter,value,unit,datetimeUtc,datetimeLocal,timezone,latitude,longitude,country_iso,isMobile,isMonitor,owner_name,provider",
+  "files": [
+    "openaq_location_1274947_measurments.csv",
+    "openaq_location_1274949_measurments.csv",
+    "openaq_location_1274950_measurments.csv",
+    "openaq_location_1275803_measurments.csv",
+    "openaq_location_1612333_measurments.csv",
+    "openaq_location_2937895_measurments.csv",
+    "openaq_location_3030376_measurments.csv",
+    "openaq_location_3145071_measurments.csv",
+    "openaq_location_3442588_measurments.csv",
+    "openaq_location_3911519_measurments.csv",
+    "openaq_location_5491763_measurments.csv",
+    "openaq_location_5523971_measurments.csv",
+    "openaq_location_5547422_measurments.csv",
+    "openaq_location_5572106_measurments.csv",
+    "openaq_location_7570_measurments.csv"
+  ]
+}
