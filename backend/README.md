@@ -1,3 +1,16 @@
+# backend
+
+## openaq
+
+openaq has a folder.
+
+Look in `openaq/transformed/*.csv` and also has a `openaq/transformed/locations.json`
+
+All CSVs have these headers: `location_id,location_name,parameter,value,unit,datetimeUtc,datetimeLocal,timezone,latitude,longitude,country_iso,isMobile,isMonitor,owner_name,provider`
+
+This is `locations.json`:
+
+```json
 {
     "1274947": {
         "latitude": 43.95222,
@@ -163,3 +176,4 @@
         ]
     }
 }
+```
