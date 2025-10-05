@@ -37,8 +37,8 @@ type OpenMeteoLocationMetadata = {
   parameters?: string[];
 };
 
-const DEFAULT_CENTER: [number, number] = [43.6532, -79.3832];
-const DEFAULT_ZOOM = 4;
+const DEFAULT_CENTER: [number, number] = [43.6532, -79.3832]; // Greater Toronto Area default view
+const DEFAULT_ZOOM = 10;
 const PREVIEW_LIMIT = 10;
 const MAX_PARAMETERS_IN_PREVIEW = 8;
 
@@ -412,12 +412,6 @@ const MapPage = () => {
           return next;
         });
 
-        const combinedEntries = Object.entries(combined);
-        const firstEntry = combinedEntries[0];
-        if (firstEntry) {
-          const [, location] = firstEntry;
-          setCenter([location.latitude, location.longitude]);
-        }
         setError(null);
       } catch (err) {
         if ((err as Error).name === 'AbortError') {
