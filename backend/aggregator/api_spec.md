@@ -19,18 +19,33 @@ Retrieve the catalog of OpenAQ locations that have transformed CSV data stored l
 - `files` (`string[]`) — CSV filenames in `backend/openaq/transformed/`
 
 ```bash
-curl -s http://127.0.0.1:8000/locations | jq '."1274947"'
+curl -s http://127.0.0.1:8000/locations
 ```
 ```json
 {
-  "latitude": 43.95222,
-  "longitude": -78.9125,
-  "files": [
-    "1274947_no.csv",
-    "1274947_no2.csv",
-    "1274947_nox.csv",
-    "1274947_o3.csv"
-  ]
+  "1274947": {
+    "latitude": 43.95222,
+    "longitude": -78.9125,
+    "files": [
+      "1274947_no.csv",
+      "1274947_no2.csv",
+      "1274947_nox.csv",
+      "1274947_o3.csv"
+    ]
+  },
+  "1274949": {
+    "latitude": 43.78043,
+    "longitude": -79.467397,
+    "files": [
+      "1274949_no.csv",
+      "1274949_no2.csv",
+      "1274949_nox.csv",
+      "1274949_o3.csv",
+      "1274949_pm25.csv",
+      "1274949_so2.csv"
+    ]
+  }
+  ...
 }
 ```
 
@@ -57,25 +72,50 @@ Return pollutant time series for a specific location. The endpoint loads each CS
 - Missing or non-numeric values are serialized as `null` so the payload is JSON compliant.
 
 ```bash
-curl -s http://127.0.0.1:8000/locations/1274947 | jq '.o3[0]'
+curl -s http://127.0.0.1:8000/locations/1274947
 ```
 ```json
 {
-  "location_id": 1274947,
-  "location_name": "Oshawa",
-  "parameter": "o3",
-  "value": 0.042,
-  "unit": "ppm",
-  "datetimeUtc": "2025-10-04T00:00:00Z",
-  "datetimeLocal": "2025-10-03T20:00:00-04:00",
-  "timezone": "America/Toronto",
-  "latitude": 43.95222,
-  "longitude": -78.9125,
-  "country_iso": null,
-  "isMobile": null,
-  "isMonitor": null,
-  "owner_name": "Unknown Governmental Organization",
-  "provider": "AirNow"
+  "no": [
+    {
+      "location_id": 1274947,
+      "location_name": "Oshawa",
+      "parameter": "no",
+      "value": 0.001,
+      "unit": "ppm",
+      "datetimeUtc": "2025-10-04T00:00:00Z",
+      "datetimeLocal": "2025-10-03T20:00:00-04:00",
+      "timezone": "America/Toronto",
+      "latitude": 43.95222,
+      "longitude": -78.9125,
+      "country_iso": null,
+      "isMobile": null,
+      "isMonitor": null,
+      "owner_name": "Unknown Governmental Organization",
+      "provider": "AirNow"
+    },
+    ...
+  ],
+  "o3": [
+    {
+      "location_id": 1274947,
+      "location_name": "Oshawa",
+      "parameter": "o3",
+      "value": 0.042,
+      "unit": "ppm",
+      "datetimeUtc": "2025-10-04T00:00:00Z",
+      "datetimeLocal": "2025-10-03T20:00:00-04:00",
+      "timezone": "America/Toronto",
+      "latitude": 43.95222,
+      "longitude": -78.9125,
+      "country_iso": null,
+      "isMobile": null,
+      "isMonitor": null,
+      "owner_name": "Unknown Governmental Organization",
+      "provider": "AirNow"
+    },
+    ...
+  ]
 }
 ```
 
