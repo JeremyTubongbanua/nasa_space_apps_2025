@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { Map, Marker, ZoomControl, type Bounds } from 'pigeon-maps';
+import { Map as PigeonMap, Marker, ZoomControl, type Bounds } from 'pigeon-maps';
 import Modal from '../components/Modal';
 import { API_BASE_URL } from '../constants';
 
@@ -610,7 +610,10 @@ const MapPage = () => {
   }, [activeMeasurements, dateFrom, dateTo]);
 
   const aggregatedSeries = useMemo(
-    () => aggregateMeasurements(filteredMeasurements, granularity),
+    () =>
+      filteredMeasurements.length > 0
+        ? aggregateMeasurements(filteredMeasurements, granularity)
+        : ([] as AggregatedPoint[]),
     [filteredMeasurements, granularity],
   );
 
@@ -838,7 +841,7 @@ const MapPage = () => {
           </aside>
 
           <div className="relative flex-1 overflow-hidden rounded-2xl border border-slate-200">
-            <Map
+            <PigeonMap
               center={center}
               zoom={zoom}
               minZoom={2}
@@ -860,7 +863,7 @@ const MapPage = () => {
                   onClick={() => handleLocationSelect(location.id)}
                 />
               ))}
-            </Map>
+            </PigeonMap>
             {loading && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-medium text-slate-500">
                 Loading locations…
