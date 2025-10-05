@@ -6,8 +6,11 @@ import { API_BASE_URL } from '../constants';
 type LocationRecord = {
   latitude: number;
   longitude: number;
-  files: string[];
+  files?: string[];
+  parameters?: string[];
   location_name?: string | null;
+  source?: SensorSource;
+  slug?: string;
 };
 
 type Location = LocationRecord & { id: string };
@@ -24,6 +27,14 @@ type MeasurementRecord = {
   provider?: string | null;
   owner_name?: string | null;
   [key: string]: unknown;
+};
+
+type OpenMeteoLocationMetadata = {
+  slug: string;
+  location_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  parameters?: string[];
 };
 
 const DEFAULT_CENTER: [number, number] = [43.6532, -79.3832];
@@ -49,6 +60,7 @@ const SENSOR_SOURCE_LABELS: Record<SensorSource, string> = {
 
 const SENSOR_SOURCE_KEY_ORDER: SensorSource[] = ['openaq', 'openmeteo', 'tempo'];
 const SENSOR_LEGEND_LINK = '#';
+const OPENMETEO_PREFIX = 'openmeteo:';
 
 const getMeasurementCacheKey = (locationId: string, parameter: string, scope: string = 'all') =>
   `${locationId}:${parameter}:${scope}`;
@@ -218,9 +230,40 @@ const MapPage = () => {
     isMountedRef.current = false;
   }, []);
 
+  const resolveLocationSource = (locationId: string): SensorSource => {
+    const cachedSource = locationSourcesRef.current[locationId] ?? locationCache[locationId]?.source;
+    if (cachedSource) {
+      return cachedSource;
+    }
+    return inferSourceFromMetadata(locationId, locationCache[locationId]?.files ?? []);
+  };
+
+  const toOpenMeteoSlug = (locationId: string) =>
+    locationId.startsWith(OPENMETEO_PREFIX) ? locationId.slice(OPENMETEO_PREFIX.length) : locationId;
+
   const fetchParameterList = async (locationId: string) => {
     if (locationParameters[locationId]) {
       return locationParameters[locationId];
+    }
+
+    const source = resolveLocationSource(locationId);
+
+    if (source === 'openmeteo') {
+      const slug = toOpenMeteoSlug(locationId);
+      const response = await fetch(`${API_BASE_URL}/openmeteo/locations/${slug}/parameters`);
+      if (!response.ok) {
+        throw new Error(`Failed to load Open-Meteo parameters (status ${response.status})`);
+      }
+      const payload: unknown = await response.json();
+      if (Array.isArray(payload)) {
+        const parameters = payload.filter((item): item is string => typeof item === 'string');
+        setLocationParameters((prev) => ({ ...prev, [locationId]: parameters }));
+        return parameters;
+      }
+      if (payload && typeof payload === 'object' && 'error' in payload) {
+        throw new Error(String((payload as { error?: unknown }).error ?? 'Open-Meteo parameter lookup failed'));
+      }
+      throw new Error('Unexpected Open-Meteo parameter response');
     }
 
     const response = await fetch(`${API_BASE_URL}/locations/${locationId}`);
@@ -249,7 +292,11 @@ const MapPage = () => {
       return cached;
     }
 
-    const endpoint = `${API_BASE_URL}/locations/${locationId}/${parameter}`;
+    const source = resolveLocationSource(locationId);
+    const endpoint =
+      source === 'openmeteo'
+        ? `${API_BASE_URL}/openmeteo/locations/${toOpenMeteoSlug(locationId)}/parameters/${parameter}`
+        : `${API_BASE_URL}/locations/${locationId}/${parameter}`;
 
     const response = await fetch(endpoint);
     if (!response.ok) {
@@ -284,16 +331,59 @@ const MapPage = () => {
     const fetchLocations = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/locations`, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`Failed with status ${response.status}`);
+        const [openaqResponse, openmeteoResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/locations`, { signal: controller.signal }),
+          fetch(`${API_BASE_URL}/openmeteo/locations`, { signal: controller.signal }),
+        ]);
+
+        if (!openaqResponse.ok) {
+          throw new Error(`Failed with status ${openaqResponse.status}`);
         }
-        const data: Record<string, LocationRecord> = await response.json();
-        setLocationCache(data);
-        setLocationIds(Object.keys(data));
+
+        const openaqData: Record<string, LocationRecord> = await openaqResponse.json();
+        let openmeteoData: OpenMeteoLocationMetadata[] = [];
+        if (openmeteoResponse.ok) {
+          const payload: unknown = await openmeteoResponse.json();
+          if (Array.isArray(payload)) {
+            openmeteoData = payload.filter((item): item is OpenMeteoLocationMetadata =>
+              Boolean(item) && typeof item === 'object' && 'slug' in item
+            );
+          }
+        }
+
+        const openmeteoEntries = Object.fromEntries(
+          openmeteoData
+            .filter((meta) => typeof meta.latitude === 'number' && typeof meta.longitude === 'number')
+            .map((meta) => {
+              const id = `${OPENMETEO_PREFIX}${meta.slug}`;
+              const locationRecord: LocationRecord = {
+                latitude: meta.latitude as number,
+                longitude: meta.longitude as number,
+                location_name: meta.location_name ?? null,
+                parameters: meta.parameters ?? [],
+                files: meta.parameters ?? [],
+                source: 'openmeteo',
+                slug: meta.slug,
+              };
+              return [id, locationRecord];
+            }),
+        ) as Record<string, LocationRecord>;
+
+        const combined: Record<string, LocationRecord> = {
+          ...openaqData,
+          ...openmeteoEntries,
+        };
+
+        setLocationCache(combined);
+        setLocationIds(Object.keys(combined));
         setLocationNames((prev) => {
           const next = { ...prev };
-          Object.entries(data).forEach(([id, location]) => {
+          Object.entries(openaqData).forEach(([id, location]) => {
+            if (location.location_name) {
+              next[id] = location.location_name;
+            }
+          });
+          Object.entries(openmeteoEntries).forEach(([id, location]) => {
             if (location.location_name) {
               next[id] = location.location_name;
             }
@@ -302,14 +392,28 @@ const MapPage = () => {
         });
         setLocationSources((prev) => {
           const next = { ...prev };
-          Object.entries(data).forEach(([id, location]) => {
+          Object.entries(openaqData).forEach(([id, location]) => {
             if (!next[id]) {
               next[id] = inferSourceFromMetadata(id, location.files ?? []);
             }
           });
+          Object.keys(openmeteoEntries).forEach((id) => {
+            next[id] = 'openmeteo';
+          });
           return next;
         });
-        const firstEntry = Object.entries(data)[0];
+        setLocationParameters((prev) => {
+          const next = { ...prev };
+          Object.entries(openmeteoEntries).forEach(([id, location]) => {
+            if (location.parameters && location.parameters.length > 0) {
+              next[id] = location.parameters;
+            }
+          });
+          return next;
+        });
+
+        const combinedEntries = Object.entries(combined);
+        const firstEntry = combinedEntries[0];
         if (firstEntry) {
           const [, location] = firstEntry;
           setCenter([location.latitude, location.longitude]);
