@@ -1,4 +1,5 @@
 import { APP_NAME } from '../constants';
+import architectureImage from '../assets/architecture.png';
 import prototypesImage from '../assets/figma_prototypes.png';
 import teamMembersImage from '../assets/members.png';
 
@@ -53,6 +54,28 @@ const About = () => (
           </a>
         </li>
       </ul>
+    </section>
+    <section className="mt-6 grid gap-6 text-slate-600">
+      <h2 className="text-base font-semibold text-slate-800">How the system fits together</h2>
+      <p>
+        The platform ingests ground measurements, hourly satellite retrievals, and weather forecasts before
+        funneling them through a shared FastAPI service. Normalized data drives both the React dashboard and
+        Twilio-powered SMS alerts so residents receive timely guidance when air quality shifts.
+      </p>
+      <figure className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        <img
+          src={architectureImage}
+          alt="SkyDashboard architecture showing data sources flowing into the aggregator, API, web app, and Twilio alerts"
+          className="w-full rounded-2xl object-cover"
+          width={728}
+          height={512}
+          loading="lazy"
+        />
+        <figcaption className="mt-2 text-sm text-slate-500">
+          System overview highlighting how OpenAQ, TEMPO, and Open-Meteo data flows into our FastAPI backend,
+          React client, and Twilio notification pipeline.
+        </figcaption>
+      </figure>
     </section>
     <section className="mt-4 grid gap-6">
       <figure className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">

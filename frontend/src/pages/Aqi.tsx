@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
-import { API_BASE_URL } from '../constants';
+import { apiFetch } from '../lib/apiClient';
 
 type AqiSnapshot = {
   slug?: string;
@@ -142,7 +142,7 @@ const AqiPage = () => {
     const controller = new AbortController();
     const loadSnapshots = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/aqi/current/preset`, { signal: controller.signal });
+        const response = await apiFetch('/aqi/current/preset', { signal: controller.signal });
         if (!response.ok) {
           throw new Error(`Failed to load AQI snapshots (status ${response.status})`);
         }
@@ -197,7 +197,7 @@ const AqiPage = () => {
     setSearchResult(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/aqi/current?query=${encodeURIComponent(query)}`);
+      const response = await apiFetch(`/aqi/current?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
         const message = payload?.detail ?? `Search failed with status ${response.status}`;

@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 
-import { API_BASE_URL } from '../constants';
+import { apiFetch } from '../lib/apiClient';
 
 type RegionResolution = {
   name: string;
@@ -109,7 +109,7 @@ const QuizPage = () => {
     setRegionConfirmed(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/aqi/current?query=${encodeURIComponent(query)}`);
+      const response = await apiFetch(`/aqi/current?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
         setRegionValidationError(payload?.detail ?? 'We could not validate that location.');
@@ -190,7 +190,7 @@ const QuizPage = () => {
 
     setQuizSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/quiz/responses`, {
+      const response = await apiFetch('/quiz/responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(basePayload),
@@ -245,7 +245,7 @@ const QuizPage = () => {
 
     try {
       const payload = { ...submittedPayload, phoneNumber: trimmed };
-      const response = await fetch(`${API_BASE_URL}/quiz/responses`, {
+      const response = await apiFetch('/quiz/responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 're
 import { useSearchParams } from 'react-router-dom';
 import { Map as PigeonMap, Marker, ZoomControl, type Bounds } from 'pigeon-maps';
 import Modal from '../components/Modal';
-import { API_BASE_URL } from '../constants';
+import { apiFetch } from '../lib/apiClient';
 
 type LocationRecord = {
   latitude: number;
@@ -253,7 +253,7 @@ const MapPage = () => {
 
     if (source === 'openmeteo') {
       const slug = toOpenMeteoSlug(locationId);
-      const response = await fetch(`${API_BASE_URL}/openmeteo/locations/${slug}/parameters`);
+      const response = await apiFetch(`/openmeteo/locations/${slug}/parameters`);
       if (!response.ok) {
         throw new Error(`Failed to load Open-Meteo parameters (status ${response.status})`);
       }
@@ -269,7 +269,7 @@ const MapPage = () => {
       throw new Error('Unexpected Open-Meteo parameter response');
     }
 
-    const response = await fetch(`${API_BASE_URL}/locations/${locationId}`);
+    const response = await apiFetch(`/locations/${locationId}`);
     if (!response.ok) {
       throw new Error(`Failed to load parameters (status ${response.status})`);
     }
@@ -296,12 +296,12 @@ const MapPage = () => {
     }
 
     const source = resolveLocationSource(locationId);
-    const endpoint =
+    const endpointPath =
       source === 'openmeteo'
-        ? `${API_BASE_URL}/openmeteo/locations/${toOpenMeteoSlug(locationId)}/parameters/${parameter}`
-        : `${API_BASE_URL}/locations/${locationId}/${parameter}`;
+        ? `/openmeteo/locations/${toOpenMeteoSlug(locationId)}/parameters/${parameter}`
+        : `/locations/${locationId}/${parameter}`;
 
-    const response = await fetch(endpoint);
+    const response = await apiFetch(endpointPath);
     if (!response.ok) {
       throw new Error(`Failed to load measurements (status ${response.status})`);
     }
@@ -335,8 +335,8 @@ const MapPage = () => {
       try {
         setLoading(true);
         const [openaqResponse, openmeteoResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/locations`, { signal: controller.signal }),
-          fetch(`${API_BASE_URL}/openmeteo/locations`, { signal: controller.signal }),
+          apiFetch('/locations', { signal: controller.signal }),
+          apiFetch('/openmeteo/locations', { signal: controller.signal }),
         ]);
 
         if (!openaqResponse.ok) {
