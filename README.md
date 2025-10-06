@@ -6,6 +6,10 @@ SkyDashboard aggregates open air-quality, satellite, and weather feeds into a si
 
 [http://159.203.5.107](http://159.203.5.107)
 
+## YouTube Video
+
+[https://youtu.be/vn030texvOs](https://youtu.be/vn030texvOs)
+
 ## Architecture Overview
 
 ![SkyDashboard architecture diagram showing data sources feeding the API, web app, and Twilio notifications](frontend/src/assets/soft_arch.png)
