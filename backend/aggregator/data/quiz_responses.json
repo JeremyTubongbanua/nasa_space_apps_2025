@@ -224,5 +224,92 @@
     "latitude": 43.90012,
     "longitude": -78.84957,
     "submitted_at": "2025-10-06T00:56:36.556026Z"
+  },
+  {
+    "health_sensitivities": [
+      "asthma",
+      "allergies",
+      "heart_condition"
+    ],
+    "activity_type": "jogging",
+    "audience": "myself",
+    "interests": [
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T02:02:39.042769Z"
+  },
+  {
+    "health_sensitivities": [
+      "asthma",
+      "allergies",
+      "heart_condition"
+    ],
+    "activity_type": "jogging",
+    "audience": "myself",
+    "interests": [
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Oshawa, Ontario, Canada",
+    "location_name": "Oshawa, Ontario, Canada",
+    "latitude": 43.90012,
+    "longitude": -78.84957,
+    "submitted_at": "2025-10-06T02:02:51.774763Z"
+  },
+  {
+    "health_sensitivities": [
+      "asthma",
+      "heart_condition"
+    ],
+    "activity_type": "jogging",
+    "audience": "myself",
+    "interests": [
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T02:04:50.438516Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition",
+      "asthma"
+    ],
+    "activity_type": "walking",
+    "audience": "myself",
+    "interests": [
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T02:29:30.362021Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition",
+      "asthma"
+    ],
+    "activity_type": "walking",
+    "audience": "myself",
+    "interests": [
+      "health_alerts"
+    ],
+    "phone_number": "+16478770016",
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T02:29:35.628136Z"
   }
 ]

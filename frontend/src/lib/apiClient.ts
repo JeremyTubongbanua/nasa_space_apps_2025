@@ -14,6 +14,7 @@ const normalizeBase = (value: string | undefined | null): string | null => {
 };
 
 const pageProtocol = typeof window !== 'undefined' ? window.location.protocol : null;
+const pageHostname = typeof window !== 'undefined' ? window.location.hostname : null;
 
 const configuredBases = Array.from(
   new Set(
@@ -28,7 +29,33 @@ if (configuredBases.length === 0) {
   throw new Error('No API base URLs are configured. Set VITE_API_PRIMARY or check constants.ts.');
 }
 
-const API_BASES: NonEmptyArray<string> = configuredBases as NonEmptyArray<string>;
+const isLocalHost = (hostname: string | null) =>
+  !hostname || hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+
+const reorderForContext = (bases: string[]): NonEmptyArray<string> => {
+  if (typeof window === 'undefined' || isLocalHost(pageHostname)) {
+    return bases as NonEmptyArray<string>;
+  }
+
+  const preferred: string[] = [];
+  const deferred: string[] = [];
+
+  bases.forEach((base) => {
+    if (base.includes('localhost') || base.includes('127.0.0.1') || base.includes('0.0.0.0')) {
+      deferred.push(base);
+    } else {
+      preferred.push(base);
+    }
+  });
+
+  const ordered = [...preferred, ...deferred];
+  if (ordered.length === 0) {
+    throw new Error('No API base URLs available after contextual reordering.');
+  }
+  return ordered as NonEmptyArray<string>;
+};
+
+const API_BASES: NonEmptyArray<string> = reorderForContext(configuredBases);
 
 let cachedBase: string | null = null;
 

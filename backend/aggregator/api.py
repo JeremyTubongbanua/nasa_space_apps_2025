@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import subprocess
 from datetime import datetime
 from pathlib import Path
 import sys
@@ -13,14 +14,6 @@ import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-try:
-    from twilio.base.exceptions import TwilioException
-    from twilio.rest import Client as TwilioClient
-except ImportError:  # pragma: no cover - optional dependency safeguard
-    TwilioClient = None  # type: ignore
-
-    class TwilioException(Exception):
-        """Fallback Twilio exception when library is unavailable."""
 
 import uvicorn
 
@@ -62,6 +55,7 @@ AQI_PARAMS = {"current": "us_aqi", "timezone": "auto"}
 QUIZ_DATA_PATH = Path(__file__).resolve().parent / "data" / "quiz_responses.json"
 TWILIO_COUNT_PATH = Path(__file__).resolve().parent / "data" / "twilio_send_count.json"
 TWILIO_ENV_PATH = Path(__file__).resolve().parents[1] / "twilio" / ".env"
+TWILIO_CLI_PATH = Path(__file__).resolve().parents[1] / "twilio" / "main.py"
 
 
 def _ensure_twilio_env_loaded() -> None:
@@ -88,20 +82,6 @@ def _ensure_twilio_env_loaded() -> None:
 
 
 _ensure_twilio_env_loaded()
-
-
-def _twilio_config() -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    _ensure_twilio_env_loaded()
-    sid = os.getenv("TWILIO_ACCOUNT_SID")
-    token = os.getenv("TWILIO_AUTH_TOKEN")
-    from_number = os.getenv("TWILIO_PHONE_NUMBER") or os.getenv("TWILIO_FROM_NUMBER") or "+14632783084"
-    logger.debug(
-        "Twilio config loaded: sid=%s token=%s from=%s",
-        "set" if sid else "missing",
-        "set" if token else "missing",
-        from_number,
-    )
-    return sid, token, from_number
 
 
 QUIZ_LOCK = Lock()
@@ -320,19 +300,45 @@ def _increment_twilio_count() -> None:
     _save_twilio_send_count(current + 1)
 
 
-def _twilio_client() -> Optional[TwilioClient]:
-    sid, token, _ = _twilio_config()
-    if TwilioClient is None:
-        logger.info("Twilio SDK not available; skipping SMS send")
-        return None
-    if not sid or not token:
-        logger.info("Twilio credentials not configured; skipping SMS send")
-        return None
+def _twilio_cli_send(body: str, phone_number: str) -> Optional[str]:
+    script = TWILIO_CLI_PATH
+    if not script.exists():
+        logger.error("Twilio CLI script missing at %s", script)
+        return "Twilio CLI script missing"
+
+    executable = sys.executable or "python3"
+    command = [executable, str(script), "--body", body, "--to", phone_number]
+
+    env = os.environ.copy()
+
     try:
-        return TwilioClient(sid, token)
-    except TwilioException as exc:
-        logger.error("Failed to instantiate Twilio client: %s", exc)
-        return None
+        completed = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    except FileNotFoundError as exc:
+        logger.error("Failed to execute Twilio CLI: %s", exc)
+        return str(exc)
+    except subprocess.CalledProcessError as exc:
+        stdout = (exc.stdout or "").strip()
+        stderr = (exc.stderr or "").strip()
+        if stdout:
+            logger.error("Twilio CLI stdout (error): %s", stdout)
+        if stderr:
+            logger.error("Twilio CLI stderr (error): %s", stderr)
+        return stderr or stdout or f"CLI exited with code {exc.returncode}"
+
+    stdout = (completed.stdout or "").strip()
+    stderr = (completed.stderr or "").strip()
+    if stdout:
+        logger.info("Twilio CLI stdout: %s", stdout)
+    if stderr:
+        logger.warning("Twilio CLI stderr: %s", stderr)
+
+    return None
 
 
 def send_quiz_confirmation_sms(phone_number: str, region: str) -> Optional[str]:
@@ -342,24 +348,20 @@ def send_quiz_confirmation_sms(phone_number: str, region: str) -> Optional[str]:
         logger.warning("Twilio send limit reached; not sending SMS")
         return "Send limit reached"
 
-    client = _twilio_client()
-    if client is None:
-        return "Twilio not configured"
-
     body = (
         "Thank you for subscribing! We will send you notifications for your region "
         f"{region.strip() or 'your area'}."
     )
 
-    try:
-        _, _, from_number = _twilio_config()
-        client.messages.create(body=body, from_=from_number, to=phone_number)
+    _ensure_twilio_env_loaded()
+    send_error = _twilio_cli_send(body=body, phone_number=phone_number)
+    if send_error is None:
         _increment_twilio_count()
-        logger.info("Sent Twilio confirmation to %s for region %s", phone_number, region)
+        logger.info("Sent Twilio confirmation to %s for region %s via CLI", phone_number, region)
         return None
-    except TwilioException as exc:
-        logger.error("Twilio send failed for %s: %s", phone_number, exc)
-        return str(exc)
+
+    logger.error("Twilio CLI send failed for %s: %s", phone_number, send_error)
+    return send_error
 
 
 @app.post("/quiz/responses")
@@ -382,7 +384,15 @@ def submit_quiz_response(payload: QuizSubmission) -> Dict[str, Any]:
     _append_quiz_response(cleaned)
 
     response: Dict[str, Any] = {"status": "ok", "submitted_at": timestamp}
-    response["sms"] = {"status": "skipped", "reason": "Temporarily disabled"}
+
+    if payload.phone_number:
+        send_error = send_quiz_confirmation_sms(payload.phone_number, payload.region)
+        if send_error is None:
+            response["sms"] = {"status": "sent"}
+        else:
+            response["sms"] = {"status": "failed", "reason": send_error}
+    else:
+        response["sms"] = {"status": "skipped", "reason": "No phone number provided"}
 
     try:
         if payload.latitude is not None and payload.longitude is not None:

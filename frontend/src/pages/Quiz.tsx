@@ -210,6 +210,10 @@ const QuizPage = () => {
       setInsights(apiResponse?.insights ?? null);
       if (apiResponse?.sms?.status === 'sent') {
         setQuizFeedback('Thanks! You are subscribed — expect SMS updates when air quality changes.');
+      } else if (apiResponse?.sms?.status === 'failed') {
+        setQuizFeedback(
+          `We could not send a confirmation SMS. ${apiResponse.sms.reason ?? 'Please verify the number and try again.'}`,
+        );
       } else if (apiResponse?.sms?.status === 'skipped') {
         setQuizFeedback(`Preferences saved. ${apiResponse.sms.reason ?? 'SMS delivery is temporarily disabled.'}`);
       } else {
@@ -256,6 +260,10 @@ const QuizPage = () => {
       const apiResponse = (await response.json().catch(() => null)) as QuizSubmissionResponse | null;
       if (apiResponse?.sms?.status === 'sent') {
         setSubscriptionStatus('Subscribed! You will receive real-time personalized AQ alerts when conditions change.');
+      } else if (apiResponse?.sms?.status === 'failed') {
+        setSubscriptionStatus(
+          `We could not send a confirmation SMS. ${apiResponse.sms.reason ?? 'Please verify the number and try again.'}`,
+        );
       } else {
         setSubscriptionStatus(
           `Subscription saved. ${apiResponse?.sms?.reason ?? 'SMS delivery is temporarily disabled.'}`,
