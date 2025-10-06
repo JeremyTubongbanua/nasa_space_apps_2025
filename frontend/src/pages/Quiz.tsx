@@ -38,6 +38,11 @@ type InsightPayload = {
   message?: string;
 };
 
+type QuizSubmissionResponse = {
+  sms?: { status?: string; reason?: string };
+  insights?: InsightPayload | null;
+};
+
 const QuizPage = () => {
   const [healthSensitivities, setHealthSensitivities] = useState<string[]>([]);
   const [activityType, setActivityType] = useState<string | null>(null);
@@ -201,15 +206,8 @@ const QuizPage = () => {
         setInsights(null);
         return;
       }
-      const apiResponse = (await response.json().catch(() => null)) as
-        | { sms?: { status?: string; reason?: string } }
-        | { insights?: InsightPayload }
-        | null;
-      if (apiResponse && 'insights' in apiResponse) {
-        setInsights(apiResponse.insights ?? null);
-      } else {
-        setInsights(null);
-      }
+      const apiResponse = (await response.json().catch(() => null)) as QuizSubmissionResponse | null;
+      setInsights(apiResponse?.insights ?? null);
       if (apiResponse?.sms?.status === 'sent') {
         setQuizFeedback('Thanks! You are subscribed — expect SMS updates when air quality changes.');
       } else if (apiResponse?.sms?.status === 'skipped') {
@@ -255,9 +253,7 @@ const QuizPage = () => {
         setSubscriptionStatus(errorPayload?.detail ?? 'We could not save your subscription right now.');
         return;
       }
-      const apiResponse = (await response.json().catch(() => null)) as
-        | { sms?: { status?: string; reason?: string } }
-        | null;
+      const apiResponse = (await response.json().catch(() => null)) as QuizSubmissionResponse | null;
       if (apiResponse?.sms?.status === 'sent') {
         setSubscriptionStatus('Subscribed! You will receive real-time personalized AQ alerts when conditions change.');
       } else {

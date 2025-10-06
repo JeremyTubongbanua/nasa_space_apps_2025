@@ -26,6 +26,8 @@ type AqiSegment = AqiBand & { width: number };
 
 const PRESET_LOCATIONS: string[] = ['ajax', 'north_york', 'oshawa', 'scarborough', 'toronto'];
 
+type AqiBandDefinition = AqiBand & { max: number };
+
 const formatTimestamp = (timestamp?: string | null) => {
   if (!timestamp) {
     return '—';
@@ -37,7 +39,7 @@ const formatTimestamp = (timestamp?: string | null) => {
   return parsed.toLocaleString();
 };
 
-const AQI_BANDS: Array<{ max: number; label: string; range: string; description: string; badgeClass: string }> = [
+const AQI_BANDS: AqiBandDefinition[] = [
   {
     max: 50,
     label: 'Good',
