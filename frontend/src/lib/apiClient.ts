@@ -13,11 +13,14 @@ const normalizeBase = (value: string | undefined | null): string | null => {
   return trimmed.replace(/\/+$/, '');
 };
 
+const pageProtocol = typeof window !== 'undefined' ? window.location.protocol : null;
+
 const configuredBases = Array.from(
   new Set(
     (API_BASE_URLS as readonly string[])
       .map((base) => normalizeBase(base))
-      .filter((base): base is string => typeof base === 'string' && base.length > 0),
+      .filter((base): base is string => typeof base === 'string' && base.length > 0)
+      .filter((base) => !(pageProtocol === 'https:' && base.startsWith('http://'))),
   ),
 );
 
