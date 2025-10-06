@@ -5,6 +5,8 @@ import logoSrc from './assets/logo.png';
 import About from './pages/About';
 import MapPage from './pages/Map';
 import Home from './pages/Home';
+import AqiPage from './pages/Aqi';
+import QuizPage from './pages/Quiz';
 
 const App = () => {
   return (
@@ -27,14 +29,14 @@ const App = () => {
                 Home
               </NavLink>
               <NavLink
-                to="/about"
+                to="/aqi"
                 className={({ isActive }) =>
                   `rounded-full px-3 py-1 transition-colors hover:text-indigo-600 ${
                     isActive ? 'bg-indigo-50 text-indigo-600' : ''
                   }`
                 }
               >
-                About
+                AQI
               </NavLink>
               <NavLink
                 to="/map"
@@ -46,14 +48,37 @@ const App = () => {
               >
                 Map
               </NavLink>
+              <NavLink
+                to="/quiz"
+                className={({ isActive }) =>
+                  `rounded-full px-3 py-1 transition-colors hover:text-indigo-600 ${
+                    isActive ? 'bg-indigo-50 text-indigo-600' : ''
+                  }`
+                }
+              >
+                Quiz
+              </NavLink>
+              <NavLink
+                to="/about"
+                className={({ isActive }) =>
+                  `rounded-full px-3 py-1 transition-colors hover:text-indigo-600 ${
+                    isActive ? 'bg-indigo-50 text-indigo-600' : ''
+                  }`
+                }
+              >
+                About
+              </NavLink>
             </nav>
           </div>
         </header>
         <main className="mx-auto flex max-w-6xl flex-1 flex-col px-6 py-10">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/aqi" element={<AqiPage />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="*" element={<Home />} />
           </Routes>
         </main>
         <footer className="border-t border-slate-200 bg-white">

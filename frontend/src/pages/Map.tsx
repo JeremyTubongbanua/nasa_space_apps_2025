@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Map as PigeonMap, Marker, ZoomControl, type Bounds } from 'pigeon-maps';
 import Modal from '../components/Modal';
 import { API_BASE_URL } from '../constants';
@@ -190,6 +191,8 @@ const aggregateMeasurements = (records: MeasurementRecord[], granularity: 'hourl
 };
 
 const MapPage = () => {
+  const [searchParams] = useSearchParams();
+  const focusedSensorId = searchParams.get('sensor');
   const [locationCache, setLocationCache] = useState<Record<string, LocationRecord>>({});
   const [locationIds, setLocationIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -427,6 +430,24 @@ const MapPage = () => {
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!focusedSensorId) {
+      return;
+    }
+    const location = locationCache[focusedSensorId];
+    if (!location) {
+      return;
+    }
+    setCenter([location.latitude, location.longitude]);
+    setZoom(11);
+    setSelectedLocationId(focusedSensorId);
+    setSelectedParameter(null);
+    setDateFrom('');
+    setDateTo('');
+    setActiveMeasurements([]);
+    setModalError(null);
+  }, [focusedSensorId, locationCache]);
 
   const visibleLocations = useMemo(() => {
     const allLocations: Location[] = locationIds

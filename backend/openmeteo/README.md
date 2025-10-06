@@ -12,6 +12,12 @@ and
 https://air-quality-api.open-meteo.com/v1/air-quality?latitude=52.52&longitude=13.41&hourly=pm10,pm2_5,ozone,uv_index,dust,carbon_dioxide,nitrogen_dioxide,sulphur_dioxide&past_days=60&forecast_days=3
 ```
 
+Current AQI snapshot example:
+
+```
+https://air-quality-api.open-meteo.com/v1/air-quality?latitude=52.52&longitude=13.41&current=us_aqi
+```
+
 List of Longitudes and Latitudes
 
 Oshawa: 43.905249, -78.861090
