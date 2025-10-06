@@ -4,7 +4,7 @@ SkyDashboard aggregates open air-quality, satellite, and weather feeds into a si
 
 ## Live Demo
 
-[https://159.203.5.107](https://159.203.5.107)
+[http://159.203.5.107](http://159.203.5.107)
 
 ## Architecture Overview
 
