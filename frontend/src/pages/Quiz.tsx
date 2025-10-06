@@ -18,6 +18,9 @@ type InsightPayload = {
   status?: string;
   headline?: string;
   callouts?: string[];
+  evidence?: string[];
+  metrics?: Array<{ pollutant: string; severity?: string; value: number | null; unit?: string | null; timestamp?: string | null }>;
+  context?: string[];
   advice?: string[];
   interest?: string[];
   footers?: string[];
@@ -516,6 +519,48 @@ const QuizPage = () => {
               {insights.callouts.map((entry, index) => (
                 <p key={`callout-${index}`}>• {entry}</p>
               ))}
+            </div>
+          )}
+          {insights.evidence && insights.evidence.length > 0 && (
+            <div className="mt-4 space-y-2 rounded-2xl border border-emerald-200 bg-white p-4 text-sm text-emerald-900">
+              <p className="font-semibold text-emerald-700">Why these results?</p>
+              {insights.evidence.map((entry, index) => (
+                <p key={`evidence-${index}`}>• {entry}</p>
+              ))}
+            </div>
+          )}
+          {insights.context && insights.context.length > 0 && (
+            <div className="mt-4 space-y-2 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
+              <p className="font-semibold text-emerald-700">Supporting metrics</p>
+              {insights.context.map((entry, index) => (
+                <p key={`context-${index}`}>• {entry}</p>
+              ))}
+            </div>
+          )}
+          {insights.metrics && insights.metrics.length > 0 && (
+            <div className="mt-4 overflow-hidden rounded-2xl border border-emerald-200 bg-white text-sm">
+              <table className="w-full table-fixed">
+                <thead className="bg-emerald-100 text-emerald-800">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Pollutant</th>
+                    <th className="px-3 py-2 text-left">Value</th>
+                    <th className="px-3 py-2 text-left">Severity</th>
+                    <th className="px-3 py-2 text-left">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {insights.metrics.map((row, index) => (
+                    <tr key={`metric-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-emerald-50/70'}>
+                      <td className="px-3 py-2 font-semibold text-emerald-800">{row.pollutant}</td>
+                      <td className="px-3 py-2 text-emerald-700">
+                        {row.value != null ? `${row.value.toFixed(1)} ${row.unit ?? ''}`.trim() : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-emerald-700">{row.severity?.replace('_', ' ') ?? '—'}</td>
+                      <td className="px-3 py-2 text-emerald-600 text-xs">{row.timestamp ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
           {insights.advice && insights.advice.length > 0 && (

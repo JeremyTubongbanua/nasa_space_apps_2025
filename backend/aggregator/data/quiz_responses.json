@@ -96,5 +96,133 @@
     "latitude": 43.70643,
     "longitude": -79.39864,
     "submitted_at": "2025-10-06T00:42:12.072282Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition",
+      "asthma",
+      "allergies"
+    ],
+    "activity_type": "mostly_indoors",
+    "audience": "family",
+    "interests": [
+      "health_alerts",
+      "trends",
+      "best_time_outdoors"
+    ],
+    "detail_level": null,
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T00:46:54.486447Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition"
+    ],
+    "activity_type": "jogging",
+    "audience": "myself",
+    "interests": [
+      "health_alerts"
+    ],
+    "detail_level": null,
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T00:49:36.136646Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition"
+    ],
+    "activity_type": "walking",
+    "audience": "students",
+    "interests": [
+      "trends"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T00:51:46.626538Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition",
+      "asthma",
+      "allergies"
+    ],
+    "activity_type": "jogging",
+    "audience": "students",
+    "interests": [
+      "trends",
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T00:54:27.176377Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition",
+      "asthma",
+      "allergies"
+    ],
+    "activity_type": "mostly_indoors",
+    "audience": "students",
+    "interests": [
+      "health_alerts",
+      "trends",
+      "best_time_outdoors",
+      "pollution_sources"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T00:54:59.100551Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition"
+    ],
+    "activity_type": "walking",
+    "audience": "myself",
+    "interests": [
+      "trends",
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Toronto, Ontario, Canada",
+    "location_name": "Toronto, Ontario, Canada",
+    "latitude": 43.70643,
+    "longitude": -79.39864,
+    "submitted_at": "2025-10-06T00:56:16.424944Z"
+  },
+  {
+    "health_sensitivities": [
+      "heart_condition"
+    ],
+    "activity_type": "walking",
+    "audience": "myself",
+    "interests": [
+      "trends",
+      "health_alerts"
+    ],
+    "phone_number": null,
+    "region": "Oshawa, Ontario, Canada",
+    "location_name": "Oshawa, Ontario, Canada",
+    "latitude": 43.90012,
+    "longitude": -78.84957,
+    "submitted_at": "2025-10-06T00:56:36.556026Z"
   }
 ]

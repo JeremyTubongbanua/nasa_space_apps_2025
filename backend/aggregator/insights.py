@@ -44,6 +44,12 @@ POLLUTANT_PARAMS = {
     "SO2": "so2",
 }
 
+CONTEXT_PARAMS = {
+    "NO": "no",
+    "NOx": "nox",
+    "PM10": "pm10",
+}
+
 
 @dataclass
 class Measurement:
@@ -122,7 +128,8 @@ def _nearest_openaq_sensor(latitude: float, longitude: float) -> Optional[Sensor
 
     location_name = openaq_dao.get_location_name(nearest_location)
     measurements: Dict[str, Measurement] = {}
-    for pollutant, parameter in POLLUTANT_PARAMS.items():
+    all_params = {**POLLUTANT_PARAMS, **CONTEXT_PARAMS}
+    for pollutant, parameter in all_params.items():
         file_name = openaq_dao.resolve_parameter_file(nearest_location, parameter)
         if not file_name:
             measurements[pollutant] = Measurement(None, None, None, None)
@@ -211,6 +218,9 @@ def _pollutant_display_name(pollutant: str) -> str:
         "O3": "O₃",
         "NO2": "NO₂",
         "SO2": "SO₂",
+        "NO": "NO",
+        "NOx": "NOₓ",
+        "PM10": "PM₁₀",
     }
     return mapping.get(pollutant, pollutant)
 
@@ -275,15 +285,69 @@ def generate_insights(
                 interest_blocks.append(block)
 
     callouts: List[str] = []
+    evidence: List[str] = []
+    context_notes: List[str] = []
+    table: List[Dict[str, Any]] = []
+    considered_pollutants = set(top_pollutants)
     for pollutant in top_pollutants:
         measurement = measurements.get(pollutant)
         if not measurement or measurement.value is None:
             continue
         direction = _direction(measurement)
         unit = measurement.unit or ("µg/m³" if pollutant == "PM25" else "ppb")
-        callouts.append(
-            f"{_pollutant_display_name(pollutant)} {measurement.value:.1f} {unit} ({direction})."
+        label = _pollutant_display_name(pollutant)
+        callouts.append(f"{label} {measurement.value:.1f} {unit} ({direction}).")
+        severity_label = severities.get(pollutant, "")
+        if severity_label and severity_label != "good":
+            evidence.append(f"{label} levels fall in the '{severity_label.replace('_', ' ')}' band based on WHO/EPA guidance.")
+        table.append(
+            {
+                "pollutant": label,
+                "severity": severity_label,
+                "value": measurement.value,
+                "unit": unit,
+                "timestamp": measurement.timestamp,
+            }
         )
+
+    for pollutant, measurement in measurements.items():
+        if pollutant in POLLUTANT_PARAMS:
+            continue  # primary pollutants already handled
+        if not measurement or measurement.value is None:
+            continue
+        label = _pollutant_display_name(pollutant)
+        unit = measurement.unit or ("µg/m³" if pollutant.upper().startswith("PM") else "ppb")
+        table.append(
+            {
+                "pollutant": label,
+                "severity": severities.get(pollutant, "context"),
+                "value": measurement.value,
+                "unit": unit,
+                "timestamp": measurement.timestamp,
+            }
+        )
+        context_notes.append(
+            f"Supporting metric — {label} at {measurement.value:.1f} {unit} provides additional context for today’s conditions."
+        )
+
+    for pollutant, measurement in measurements.items():
+        if pollutant in POLLUTANT_PARAMS and pollutant not in considered_pollutants:
+            if not measurement or measurement.value is None:
+                continue
+            label = _pollutant_display_name(pollutant)
+            unit = measurement.unit or ("µg/m³" if pollutant.upper().startswith("PM") else "ppb")
+            table.append(
+                {
+                    "pollutant": label,
+                    "severity": severities.get(pollutant, "context"),
+                    "value": measurement.value,
+                    "unit": unit,
+                    "timestamp": measurement.timestamp,
+                }
+            )
+            context_notes.append(
+                f"{label} currently measures {measurement.value:.1f} {unit}, indicating conditions remain {severities.get(pollutant, 'stable').replace('_', ' ')}."
+            )
 
     severity_headline = {
         "good": "Air quality is good in {location}.",
@@ -319,6 +383,9 @@ def generate_insights(
         "dominant_pollutant": _pollutant_display_name(dominant) if dominant else None,
         "headline": severity_headline.format(location=sensor.location_name or "your area"),
         "callouts": callouts,
+        "evidence": evidence,
+        "metrics": table,
+        "context": context_notes,
         "advice": advice,
         "interest": interest_blocks,
         "best_window": best_window,
